@@ -53,7 +53,7 @@ class ProductsController < ApplicationController
           product_id: @product.id,
           quantity: 1,
         })
-        render json: { cart: cart, product: @product }, status: :created, location: @product
+        render json: { id: cart.id, product: @product }, status: :created, location: @product
         cart.total_price = cart.total_price + (@product.price * cart_item.quantity)
         cart.save
       else

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_22_005746) do
+ActiveRecord::Schema[7.1].define(version: 2025_11_23_234000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,7 +25,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_22_005746) do
   end
 
   create_table "carts", force: :cascade do |t|
-    t.decimal "total_price", precision: 17, scale: 2
+    t.decimal "cart_value", precision: 17, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -35,6 +35,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_22_005746) do
     t.decimal "price", precision: 17, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "total_price", precision: 17, scale: 2
   end
 
   add_foreign_key "cart_items", "carts"

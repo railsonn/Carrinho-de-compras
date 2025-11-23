@@ -22,6 +22,7 @@ class ProductsController < ApplicationController
   def create
     if product_params.present?
       @product = Product.new(product_params)
+
     else
       return render json: { error: "Parâmetros inválidos" }, status: :bad_request
     end
@@ -33,25 +34,32 @@ class ProductsController < ApplicationController
     end
   end
 
+
+  # Adiciona um produto ao carrinho da sessao e retorna o payload com a lista de produtos do carrinho atualizado
   def show_cart
+    # Verifica se os parametros do produto estao presentes
     unless product_params.present?
       render json: { error: "Parâmetros do produto ausentes" }, status: :bad_request
-    else
+    # Se os parametros estiverem presentes
+   else
+      # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
       cart = Cart.find_by(id: session[:cart_id])
-      product = Product.find_by(id: product_params[:id])
-  
 
-      render json: { cart: cart, product: product }
-      product = Product.new(product_params)
+      @product = Product.new(product_params)
 
-      if product.save
+      if @product.save
         cart_item = CartItem.create({
           cart_id: cart.id,
-          product_id: product.id,
+          product_id: @product.id,
           quantity: 1,
         })
+        render json: { cart: cart, product: @product }, status: :created, location: @product
+        cart.total_price = cart.total_price + (@product.price * cart_item.quantity)
         cart.save
-      end 
+      else
+      # Se o produto nao for salvo, retorna o erro
+        render json: @product.errors, status: :unprocessable_entity
+      end
     end
   end
 

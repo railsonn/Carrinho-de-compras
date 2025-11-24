@@ -10,7 +10,7 @@ class CartsController < ApplicationController
     unless cart
       # Nao existe um carrinho na sessao, cria um novo
       cart = Cart.create({
-        total_price: 0.0
+        cart_value: 0.0
       })
       # e salva o id do carrinho na sessao
       session[:cart_id] = cart.id
@@ -20,5 +20,10 @@ class CartsController < ApplicationController
       render json: cart
     end
   end
+  
+  private
 
+  def cart_params 
+    params.require(:cart).permit(:cart_value)
+  end
 end

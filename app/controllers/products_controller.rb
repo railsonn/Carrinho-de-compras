@@ -44,6 +44,8 @@ class ProductsController < ApplicationController
    else
       # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
       cart = Cart.find_by(id: session[:cart_id])
+      quantity = params[:quantity] || 1
+
 
       @product = Product.new(product_params)
 
@@ -51,11 +53,13 @@ class ProductsController < ApplicationController
         cart_item = CartItem.create({
           cart_id: cart.id,
           product_id: @product.id,
-          quantity: 1,
+          quantity: quantity,
+          total_price: @product.price * quantity
         })
-        render json: { id: cart.id, product: @product }, status: :created, location: @product
-        cart.total_price = cart.total_price + (@product.price * cart_item.quantity)
+        # Atualiza o valor total do carrinho
+        cart.cart_value += cart_item.total_price
         cart.save
+         render json: { id: cart.id, cart_value: cart.cart_value, product: @product }, status: :created, location: @product
       else
       # Se o produto nao for salvo, retorna o erro
         render json: @product.errors, status: :unprocessable_entity

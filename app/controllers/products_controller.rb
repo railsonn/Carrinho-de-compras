@@ -47,8 +47,7 @@ class ProductsController < ApplicationController
 
 
       @product = Product.new(product_params)
-      @product.total_price = @product.price * quantity
-      @product.save
+      @product.total_price = (@product.price * quantity)
 
       if @product.save
         cart_item = CartItem.create({

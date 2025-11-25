@@ -22,7 +22,6 @@ class ProductsController < ApplicationController
   def create
     if product_params.present?
       @product = Product.new(product_params)
-
     else
       return render json: { error: "Parâmetros inválidos" }, status: :bad_request
     end
@@ -48,22 +47,50 @@ class ProductsController < ApplicationController
 
 
       @product = Product.new(product_params)
+      @product.total_price = @product.price * quantity
+      @product.save
 
       if @product.save
         cart_item = CartItem.create({
           cart_id: cart.id,
           product_id: @product.id,
-          quantity: quantity,
-          total_price: @product.price * quantity
+          quantity: quantity
         })
         # Atualiza o valor total do carrinho
-        cart.cart_value += cart_item.total_price
+        cart.cart_value += @product.total_price
         cart.save
-         render json: { id: cart.id, cart_value: cart.cart_value, product: @product }, status: :created, location: @product
+
+        payload = { id: cart.id, products: cart.products.map { |product| {
+           cart_value: cart.cart_value,
+            id: product.id,
+            name: product.name,
+            quantity: cart_item.quantity,
+            unit_price: product.price,
+            total_price: product.total_price
+            }
+          }
+        }
+        render json: payload, status: :ok
       else
       # Se o produto nao for salvo, retorna o erro
         render json: @product.errors, status: :unprocessable_entity
       end
+    end
+  end
+
+  # Essa acao retorna os produtos do carrinho associado a sessao atual
+  def current_cart_products
+    # Busca o carrinho associado a sessao
+    cart = Cart.find_by(id: session[:cart_id])
+    if cart
+      # Monta o payload com os produtos do carrinho e e retorna
+       cart = cart.products.map do |product|
+        { id: product.id, name: product.name, price: product.price }
+      end
+
+      render json: { products: cart }, status: :ok
+    else
+      render json: { error: "Carrinho não encontrado" }, status: :not_found
     end
   end
 

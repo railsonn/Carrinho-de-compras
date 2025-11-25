@@ -36,15 +36,24 @@ class ProductsController < ApplicationController
 
   # Adiciona um produto ao carrinho da sessao e retorna o payload com a lista de produtos do carrinho atualizado
   def show_cart
+    # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
+    cart = Cart.find_by(id: session[:cart_id])
+
+    unless cart
+      # Nao existe um carrinho na sessao, cria um novo
+      cart = Cart.create({
+        cart_value: 0.0
+      })
+      # e salva o id do carrinho na sessao
+      session[:cart_id] = cart.id
+      render json: cart
+    end
+
     # Verifica se os parametros do produto estao presentes
     unless product_params.present?
       render json: { error: "Parâmetros do produto ausentes" }, status: :bad_request
-    # Se os parametros estiverem presentes
-   else
-      # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
-      cart = Cart.find_by(id: session[:cart_id])
+    else
       quantity = params[:quantity] || 1
-
 
       @product = Product.new(product_params)
       @product.total_price = (@product.price * quantity)
@@ -60,36 +69,19 @@ class ProductsController < ApplicationController
         cart.save
 
         payload = { id: cart.id, products: cart.products.map { |product| {
-           cart_value: cart.cart_value,
-            id: product.id,
-            name: product.name,
-            quantity: cart_item.quantity,
-            unit_price: product.price,
-            total_price: product.total_price
-            }
-          }
+          id: product.id,
+          name: product.name,
+          quantity: cart_item.quantity,
+          unit_price: product.price,
+          total_price: product.total_price
+        }
+        }
         }
         render json: payload, status: :ok
       else
       # Se o produto nao for salvo, retorna o erro
         render json: @product.errors, status: :unprocessable_entity
       end
-    end
-  end
-
-  # Essa acao retorna os produtos do carrinho associado a sessao atual
-  def current_cart_products
-    # Busca o carrinho associado a sessao
-    cart = Cart.find_by(id: session[:cart_id])
-    if cart
-      # Monta o payload com os produtos do carrinho e e retorna
-       cart = cart.products.map do |product|
-        { id: product.id, name: product.name, price: product.price }
-      end
-
-      render json: { products: cart }, status: :ok
-    else
-      render json: { error: "Carrinho não encontrado" }, status: :not_found
     end
   end
 

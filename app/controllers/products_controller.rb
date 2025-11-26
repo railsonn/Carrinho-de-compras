@@ -95,6 +95,24 @@ class ProductsController < ApplicationController
     end
   end
 
+
+  def remove_cart_item
+    cart = Cart.find_by(id: session[:cart_id])
+    product = cart.products.find_by(id: params[:product_id])
+
+    unless product
+      render json: { error: "Produto nao encontrado no carrinho" }, status: :not_found
+    else 
+      cart_item = product.cart_items.find_by(product_id: product.id)
+      cart.cart_value -= product.total_price
+      cart.save
+      cart_item.destroy
+      product.destroy
+      render json: { product: product, cart_item: cart_item }, status: :ok
+    end
+  end
+  
+
   # PATCH/PUT /products/1
   def update
     if @product.update(product_params)

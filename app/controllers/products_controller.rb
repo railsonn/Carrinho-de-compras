@@ -41,10 +41,18 @@ class ProductsController < ApplicationController
       render json: { error: "Parâmetros do produto ausentes" }, status: :bad_request
     # Se os parametros estiverem presentes
    else
-      # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
+      # Busca o id do carrinho na sessao e adiciona o produto e cria um registro na tabela cart_items
       cart = Cart.find_by(id: session[:cart_id])
       quantity = params[:quantity] || 1
 
+      # Se o carrinho nao estiver criado e guardado na sessao ele cria e salva carrinho na sessao 
+      unless cart
+        cart = Cart.create({
+          cart_value: 0.0
+        })
+        session[:cart_id] = cart.id
+        cart.save
+      end
 
       @product = Product.new(product_params)
       @product.total_price = (@product.price * quantity)

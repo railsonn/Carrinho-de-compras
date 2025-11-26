@@ -6,8 +6,9 @@ class CartsController < ApplicationController
   end
 
   def create
-    
+    cart = Cart.all
   end
+
   
   private
 

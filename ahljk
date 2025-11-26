@@ -1,0 +1,53 @@
+[33mcommit 5b08c29d274e9097c920b5ee539198d0f13128b4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Tue Nov 25 21:12:32 2025 -0300
+
+    drop table CartItem
+
+[33mcommit 01a3fe94ca0d99a73cb3300598e55670368a59a2[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Tue Nov 25 15:12:31 2025 -0300
+
+    Organization of the endpoints
+
+[33mcommit c6386be5b7231716044986e12dfb3020a477f743[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Mon Nov 24 21:40:56 2025 -0300
+
+    Organization of the payload and return of products from the current cart.
+
+[33mcommit abc6a0a6f5e1940395b628711e1b1f878df1dab2[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Mon Nov 24 21:28:19 2025 -0300
+
+    modify column total_price from CartItem to Product
+
+[33mcommit 17be52bb65ffd0f118f8c70df64cc32235a16f55[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Sun Nov 23 21:43:17 2025 -0300
+
+    atualization cart value and resolving bug
+
+[33mcommit b471792c50540e772f855cdc3be0fb8fd3bc0343[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Sun Nov 23 21:42:03 2025 -0300
+
+    removing product column and add to cartitem
+
+[33mcommit 26fc6504b76bf54669d417597a35792d90b48cce[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Sun Nov 23 20:43:41 2025 -0300
+
+    modify tables products and carts
+
+[33mcommit 3afa5027a45cf11e65fb6f669db3a0c062b626ae[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Sun Nov 23 16:11:49 2025 -0300
+
+    create route add product in cart and return payload the list products
+
+[33mcommit 71d6041ddf0973444f571f40146eb18a8227ee44[m
+Author: railsonn <railsongamer99@gmail.com>
+Date:   Sat Nov 22 12:43:17 2025 -0300
+
+    initial commit

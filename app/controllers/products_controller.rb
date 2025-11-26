@@ -36,24 +36,15 @@ class ProductsController < ApplicationController
 
   # Adiciona um produto ao carrinho da sessao e retorna o payload com a lista de produtos do carrinho atualizado
   def show_cart
-    # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
-    cart = Cart.find_by(id: session[:cart_id])
-
-    unless cart
-      # Nao existe um carrinho na sessao, cria um novo
-      cart = Cart.create({
-        cart_value: 0.0
-      })
-      # e salva o id do carrinho na sessao
-      session[:cart_id] = cart.id
-      render json: cart
-    end
-
     # Verifica se os parametros do produto estao presentes
     unless product_params.present?
       render json: { error: "Parâmetros do produto ausentes" }, status: :bad_request
-    else
+    # Se os parametros estiverem presentes
+   else
+      # Busca o id do carrinho na sessao e adiociona o produto e cria um registro na tabela cart_items
+      cart = Cart.find_by(id: session[:cart_id])
       quantity = params[:quantity] || 1
+
 
       @product = Product.new(product_params)
       @product.total_price = (@product.price * quantity)
@@ -69,13 +60,14 @@ class ProductsController < ApplicationController
         cart.save
 
         payload = { id: cart.id, products: cart.products.map { |product| {
-          id: product.id,
-          name: product.name,
-          quantity: cart_item.quantity,
-          unit_price: product.price,
-          total_price: product.total_price
-        }
-        }
+           cart_value: cart.cart_value,
+            id: product.id,
+            name: product.name,
+            quantity: cart_item.quantity,
+            unit_price: product.price,
+            total_price: product.total_price
+            }
+          }
         }
         render json: payload, status: :ok
       else
@@ -97,7 +89,7 @@ class ProductsController < ApplicationController
       products_duplicates = Product.where(name: duplicados)
 
 
-      quantity = products_duplicates.sum(:quantity)
+      quantity = cart.cart_items.sum(:quantity)
       
       render json: { duplicados: duplicados, products_duplicates: products_duplicates, quantity: quantity }, status: :ok
     end

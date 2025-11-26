@@ -85,6 +85,24 @@ class ProductsController < ApplicationController
     end
   end
 
+  # Se um produto ja estiver no carrinho, atualiza so a quantidade
+  def cart_add_items
+    cart = Cart.find_by(id: session[:cart_id])
+    unless cart
+      render json: { error: "Carrinho nao encontrado" }, status: :not_found
+    else 
+      product = cart.products
+
+      duplicados = product.group(:name).having("COUNT(name) > 1").pluck(:name)
+      products_duplicates = Product.where(name: duplicados)
+
+
+      quantity = products_duplicates.sum(:quantity)
+      
+      render json: { duplicados: duplicados, products_duplicates: products_duplicates, quantity: quantity }, status: :ok
+    end
+  end
+
   # PATCH/PUT /products/1
   def update
     if @product.update(product_params)

@@ -103,12 +103,16 @@ class ProductsController < ApplicationController
     unless product
       render json: { error: "Produto nao encontrado no carrinho" }, status: :not_found
     else 
+      # Destroy product da tabela CartItem e Product, com id do params[:product_id] 
+      # Tirando o total_price do produto removido do cart_value da tabela Cart
       cart_item = product.cart_items.find_by(product_id: product.id)
       cart.cart_value -= product.total_price
       cart.save
       cart_item.destroy
       product.destroy
-      render json: { product: product, cart_item: cart_item }, status: :ok
+      
+      product = Product.all
+      render json: { product: product }, status: :ok
     end
   end
   

@@ -67,6 +67,9 @@ class ProductsController < ApplicationController
         cart.cart_value += @product.total_price
         cart.save
 
+        # Marcador para ver se o carrinho esta abandonado
+        
+
         payload = { id: cart.id, products: cart.products.map { |product| {
            cart_value: cart.cart_value,
             id: product.id,
@@ -94,12 +97,49 @@ class ProductsController < ApplicationController
       product = cart.products
 
       duplicados = product.group(:name).having("COUNT(name) > 1").pluck(:name)
-      products_duplicates = Product.where(name: duplicados)
-
-
+      products_duplicates = Product.where(name: duplicados).to_a
+      count_duplicados = products_duplicates.count
       quantity = cart.cart_items.sum(:quantity)
+
+
+      product = products_duplicates
+      product_to = products_duplicates[0]
       
-      render json: { duplicados: duplicados, products_duplicates: products_duplicates, quantity: quantity }, status: :ok
+      # primeiro eu vou ter que separar os tipos de name duplicados como os duplicados de copo stanley, xiaomi e por ai vai 
+      # depois implementar cada um a esse codigo ai de baixo
+      # ai eu vou ter que criar um novo product e um cart item como eu estava fazendo ai em baixo e apagar todo o resto 
+
+
+      # permanente_product = Product.new({
+      #   name: products_duplicates[0].name,
+      #   price: products_duplicates[0].price,
+      #   total_price: products_duplicates[0].price * quantity
+      # })
+
+      # cart_item = products_duplicates.each do |cada| 
+      #   CartItem.where(cart_id: cada.id)
+      # end
+      
+      # if permanente_product.save
+      #   products_duplicates[0].map do |cada| 
+      #     cart_item = CartItem.where(cart_id: cada.id)
+      #     cart_item.destroy
+      #   end
+      #   last_record = products_duplicates.last
+      #   Product.where.not(id: last_record.id).delete_all
+
+      #   permanente_cart_item = CartItem.create({
+      #     cart_id: cart.id,
+      #     product_id: permanente_product.id,
+      #     quantity: quantity
+      #   })
+      # else
+      #   # Se o produto nao for salvo, retorna o erro
+      #   render json: @product.errors, status: :unprocessable_entity
+      # end
+
+
+      render json: { product1: product, product2: product_to, duplicados: duplicados, products_duplicates: products_duplicates, count: count_duplicados }, status: :ok
     end
   end
 

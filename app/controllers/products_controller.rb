@@ -96,18 +96,62 @@ class ProductsController < ApplicationController
     else 
       product = cart.products
 
+
       duplicados = product.group(:name).having("COUNT(name) > 1").pluck(:name)
       products_duplicates = Product.where(name: duplicados).to_a
       count_duplicados = products_duplicates.count
       quantity = cart.cart_items.sum(:quantity)
 
+      array = []
+      array_uniq = []
+      array_products = []
 
-      product = products_duplicates
+      # Tornando o products_duplicates apenas com um registro representando todos os seus outros duplicados
+      # Adicionando apenas 1 de cada no array_uniq
+      products = products_duplicates.each do |cada|   
+        array.push(cada.name)
+        array_uniq = array.uniq
+      end
+
+      contador = []
+      contando_quantity = []
+      resultado = []
+
+      cada = array_uniq.each do |produc|
+        grupo = { name: produc, result: Product.where(name: produc).to_a }
+        contando_quantity << grupo
+        
+        soma = grupo[:result].sum do |product|
+          product.cart_items.sum(:quantity)
+        end
+
+        resultado << {
+          name: grupo[:name],
+          total: soma
+        }
+      
+
+        # for i in contando_quantity[0]
+        #   cart_item = CartItem.where(product_id: i.id)
+        #   contador.push(cart_item[0].quantity)
+        # end
+
+      #   grupo[:result].each do |product|
+      #     cart_item = CartItem.where(product_id: product.id)
+      #     contador << cart_item[0].quantity
+      #   end
+      end
+      # product = products_duplicates
       product_to = products_duplicates[0]
       
       # primeiro eu vou ter que separar os tipos de name duplicados como os duplicados de copo stanley, xiaomi e por ai vai 
       # depois implementar cada um a esse codigo ai de baixo
       # ai eu vou ter que criar um novo product e um cart item como eu estava fazendo ai em baixo e apagar todo o resto 
+
+ 
+      # array.each do |name|
+      
+      # end
 
 
       # permanente_product = Product.new({
@@ -138,8 +182,8 @@ class ProductsController < ApplicationController
       #   render json: @product.errors, status: :unprocessable_entity
       # end
 
-
-      render json: { product1: product, product2: product_to, duplicados: duplicados, products_duplicates: products_duplicates, count: count_duplicados }, status: :ok
+      # duplicados: duplicados, products_duplicates: products_duplicates, count: count_duplicados
+      render json: { resultado: resultado  }, status: :ok
     end
   end
 

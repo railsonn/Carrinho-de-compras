@@ -94,96 +94,66 @@ class ProductsController < ApplicationController
     unless cart
       render json: { error: "Carrinho nao encontrado" }, status: :not_found
     else 
-      product = cart.products
+      # CODIGO JA PRONTO
 
+      # Pega todos os names que sao duplicados e deixa so um de cada duplicado
+      duplicados = Product.group(:name).having("COUNT(name) > 1").pluck(:name)
 
-      duplicados = product.group(:name).having("COUNT(name) > 1").pluck(:name)
-      products_duplicates = Product.where(name: duplicados).to_a
-      count_duplicados = products_duplicates.count
-      quantity = cart.cart_items.sum(:quantity)
+      # Pra cada duplicado que no caso era CopoStanley e XiaomiPoco
+      resultado = duplicados.map do |name|
+        # Ele pesquisa no banco de dados todos com o nome CopoStanley e XiaomiPoco
+        produtos = Product.where(name: name)
 
-      array = []
-      array_uniq = []
-      array_products = []
-
-      # Tornando o products_duplicates apenas com um registro representando todos os seus outros duplicados
-      # Adicionando apenas 1 de cada no array_uniq
-      products = products_duplicates.each do |cada|   
-        array.push(cada.name)
-        array_uniq = array.uniq
-      end
-
-      contador = []
-      contando_quantity = []
-      resultado = []
-
-      cada = array_uniq.each do |produc|
-        grupo = { name: produc, result: Product.where(name: produc).to_a }
-        contando_quantity << grupo
-        
-        soma = grupo[:result].sum do |product|
-          product.cart_items.sum(:quantity)
-        end
-
-        resultado << {
-          name: grupo[:name],
-          total: soma
+        # E entao relaciona cada um com o CartItem, nessa pesquisa ele extrai o id de cada produto da pesquisa acima
+        # E na pesquisa retorna o id de cada produto na tabela CartItem, e ele so pega e soma todos os campos quantity
+        # de cada registro e retorna o JSON com o name e o total quantity de cada name duplicado
+        total_quantity = CartItem.where(product_id: produtos).sum(:quantity)
+        {
+          name: name,
+          total: total_quantity
         }
-      
-
-        # for i in contando_quantity[0]
-        #   cart_item = CartItem.where(product_id: i.id)
-        #   contador.push(cart_item[0].quantity)
-        # end
-
-      #   grupo[:result].each do |product|
-      #     cart_item = CartItem.where(product_id: product.id)
-      #     contador << cart_item[0].quantity
-      #   end
       end
-      # product = products_duplicates
-      product_to = products_duplicates[0]
-      
-      # primeiro eu vou ter que separar os tipos de name duplicados como os duplicados de copo stanley, xiaomi e por ai vai 
-      # depois implementar cada um a esse codigo ai de baixo
-      # ai eu vou ter que criar um novo product e um cart item como eu estava fazendo ai em baixo e apagar todo o resto 
 
- 
-      # array.each do |name|
-      
+      # CODIGO QUE EU FIZ 90%
+      # product = cart.products
+        
+      # duplicados = product.group(:name).having("COUNT(name) > 1").pluck(:name)
+      # products_duplicates = Product.where(name: duplicados).to_a
+      # count_duplicados = products_duplicates.count
+      # quantity = cart.cart_items.sum(:quantity)
+
+      # array = []
+      # array_uniq = []
+      # array_products = []
+
+      # # Tornando o products_duplicates apenas com um registro representando todos os seus outros duplicados
+      # # Adicionando apenas 1 de cada no array_uniq
+      # products_duplicates.each do |cada|   
+      #   array.push(cada.name)
+      #   array_uniq = array.uniq
       # end
 
+      # contando_quantity = []
+      # resultado = []
 
-      # permanente_product = Product.new({
-      #   name: products_duplicates[0].name,
-      #   price: products_duplicates[0].price,
-      #   total_price: products_duplicates[0].price * quantity
-      # })
-
-      # cart_item = products_duplicates.each do |cada| 
-      #   CartItem.where(cart_id: cada.id)
-      # end
-      
-      # if permanente_product.save
-      #   products_duplicates[0].map do |cada| 
-      #     cart_item = CartItem.where(cart_id: cada.id)
-      #     cart_item.destroy
+      # # Faz um each para buscar registros duplicados de cada name do array_uniq
+      # array_uniq.each do |produc|
+      #   grupo = { name: produc, result: Product.where(name: produc).to_a }
+      #   # Adiciona o obejto grupo com os nomes buscados no banco de cada produc ao array contando_quantity
+      #   contando_quantity << grupo
+        
+      #   # Esse bloco faz para cada item e soma o quantity, e depois soma cada valor gerado pelo bloco
+      #   soma = grupo[:result].sum do |product|
+      #     product.cart_items.sum(:quantity)
       #   end
-      #   last_record = products_duplicates.last
-      #   Product.where.not(id: last_record.id).delete_all
 
-      #   permanente_cart_item = CartItem.create({
-      #     cart_id: cart.id,
-      #     product_id: permanente_product.id,
-      #     quantity: quantity
-      #   })
-      # else
-      #   # Se o produto nao for salvo, retorna o erro
-      #   render json: @product.errors, status: :unprocessable_entity
+      #   resultado << {
+      #     name: grupo[:name],
+      #     total: soma
+      #   }
       # end
 
-      # duplicados: duplicados, products_duplicates: products_duplicates, count: count_duplicados
-      render json: { resultado: resultado  }, status: :ok
+      render json: { duplicados: duplicados, resultado: resultado  }, status: :ok
     end
   end
 

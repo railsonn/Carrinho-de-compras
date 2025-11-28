@@ -95,12 +95,11 @@ class ProductsController < ApplicationController
       render json: { error: "Carrinho nao encontrado" }, status: :not_found
     else 
       # CODIGO JA PRONTO
-
       # Pega todos os names que sao duplicados e deixa so um de cada duplicado
       duplicados = Product.group(:name).having("COUNT(name) > 1").pluck(:name)
 
       # Pra cada duplicado que no caso era CopoStanley e XiaomiPoco
-      resultado = duplicados.map do |name|
+      resultado = duplicados.each do |name|
         # Ele pesquisa no banco de dados todos com o nome CopoStanley e XiaomiPoco
         produtos = Product.where(name: name)
 
@@ -108,11 +107,42 @@ class ProductsController < ApplicationController
         # E na pesquisa retorna o id de cada produto na tabela CartItem, e ele so pega e soma todos os campos quantity
         # de cada registro e retorna o JSON com o name e o total quantity de cada name duplicado
         total_quantity = CartItem.where(product_id: produtos).sum(:quantity)
-        {
-          name: name,
-          total: total_quantity
+        product_price = Product.where(price: produtos)
+        product = Product.find_by(name: name)
+      
+        # Criacao de params para novo registro que vai subsituir todos os duplicados com a soma dos quantitys
+        params = {
+          name: product.name,
+          price: product.price,
+          total_price: product.price * total_quantity
         }
+
+        @permanente_product = Product.new(params)
+        if @permanente_product.save
+          # Pega o id dos produtos duplicados e busca na tabela CartItem e remove
+          products_id = Product.where(id: produtos)
+          cart_item = CartItem.where(product_id: products_id).destroy_all
+
+          # guarda na variavel o permanente_product e apaga todo o resto
+          last_record = produtos.last
+          # Product.where.not(id: last_record.id).destroy_all
+
+          # Cria e salva o novo CartItem para cada duplicata com o quantity atualizado tambem
+          permanente_cart_item = CartItem.create({
+            cart_id: cart.id,
+            product_id: @permanente_product.id,
+            quantity: total_quantity
+          })
+          permanente_cart_item.save
+        end
       end
+
+      tot_products = Product.all
+      tot_price = Product.all.sum(:total_price)
+    
+      #   # Se o produto nao for salvo, retorna o erro
+      #   render json: @product.errors, status: :unprocessable_entity
+      # end
 
       # CODIGO QUE EU FIZ 90%
       # product = cart.products
@@ -153,7 +183,7 @@ class ProductsController < ApplicationController
       #   }
       # end
 
-      render json: { duplicados: duplicados, resultado: resultado  }, status: :ok
+      render json: { products: Product.all, total_price: tot_price }, status: :ok
     end
   end
 

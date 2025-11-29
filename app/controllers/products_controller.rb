@@ -98,6 +98,8 @@ class ProductsController < ApplicationController
       # Pega todos os names que sao duplicados e deixa so um de cada duplicado
       duplicados = Product.group(:name).having("COUNT(name) > 1").pluck(:name)
 
+      
+      permanente_product_ids = []
       # Pra cada duplicado que no caso era CopoStanley e XiaomiPoco
       resultado = duplicados.each do |name|
         # Ele pesquisa no banco de dados todos com o nome CopoStanley e XiaomiPoco
@@ -119,13 +121,17 @@ class ProductsController < ApplicationController
 
         @permanente_product = Product.new(params)
         if @permanente_product.save
+          
+          permanente_product_ids << Product.find_by(id: @permanente_product.id)
+          
+          permanente_product_ids.each do |permanente_product_id| 
           # Pega o id dos produtos duplicados e busca na tabela CartItem e remove
           products_id = Product.where(id: produtos)
-          cart_item = CartItem.where(product_id: products_id).destroy_all
+          cart_item = CartItem.where.not(product_id: permanente_product_id).destroy_all
 
           # guarda na variavel o permanente_product e apaga todo o resto
-          last_record = produtos.last
-          # Product.where.not(id: last_record.id).destroy_all
+          Product.where.not(id: permanente_product_id).destroy_all
+          end
 
           # Cria e salva o novo CartItem para cada duplicata com o quantity atualizado tambem
           permanente_cart_item = CartItem.create({

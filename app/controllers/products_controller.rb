@@ -121,9 +121,14 @@ class ProductsController < ApplicationController
 
         @permanente_product = Product.new(params)
         if @permanente_product.save
+          permanente_product_ids.push(@permanente_product.id)
           
-          CartItem.where(product_id: produtos).destroy_all
-          produtos.destroy_all
+          produtos.pluck(:id).each do |id|
+            unless permanente_product_ids.include?(id)
+              CartItem.where(product_id: id).destroy_all
+              Product.find(id).destroy
+            end
+          end
           
           # permanente_product_ids.each do |permanente_product_id| 
           # # # Pega o id dos produtos duplicados e busca na tabela CartItem e remove

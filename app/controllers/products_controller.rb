@@ -122,16 +122,19 @@ class ProductsController < ApplicationController
         @permanente_product = Product.new(params)
         if @permanente_product.save
           
-          permanente_product_ids << Product.find_by(id: @permanente_product.id)
+          CartItem.where(product_id: produtos).destroy_all
+          produtos.destroy_all
           
-          permanente_product_ids.each do |permanente_product_id| 
-          # Pega o id dos produtos duplicados e busca na tabela CartItem e remove
-          products_id = Product.where(id: produtos)
-          cart_item = CartItem.where.not(product_id: permanente_product_id).destroy_all
+          # permanente_product_ids.each do |permanente_product_id| 
+          # # # Pega o id dos produtos duplicados e busca na tabela CartItem e remove
+          # # products_id = Product.where(id: produtos)
+          #   # CartItem.where("product_id IN (?) AND product_id != ? ", produtos, permanente_product_id).destroy_all 
+          #   CartItem.where.not(product_id: permanente_product_id).destroy_all
 
-          # guarda na variavel o permanente_product e apaga todo o resto
-          Product.where.not(id: permanente_product_id).destroy_all
-          end
+
+          # # guarda na variavel o permanente_product e apaga todo o resto
+          #   Product.where.not(id: produtos).destroy_all
+          # end
 
           # Cria e salva o novo CartItem para cada duplicata com o quantity atualizado tambem
           permanente_cart_item = CartItem.create({
@@ -189,7 +192,7 @@ class ProductsController < ApplicationController
       #   }
       # end
 
-      render json: { products: Product.all, total_price: tot_price }, status: :ok
+      render json: { permanente_id: permanente_product_ids, products: Product.all }, status: :ok
     end
   end
 
